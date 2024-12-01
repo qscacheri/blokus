@@ -157,6 +157,7 @@ export class Game {
 			console.log('No piece found');
 			return;
 		}
+		console.log(`Pushing piece`, piece);
 		this.playedPieces.push(piece);
 	}
 
@@ -166,11 +167,11 @@ export class Game {
 			this.placeFirstPiece(color as Color);
 		}
 
-		for (const color in Colors) {
-			this.updatePossibleMoves(color as Color);
-		}
-
-		$inspect({ possibleMoves: this.possibleMoves });
+		// for (const color in Colors) {
+		// 	this.updatePossibleMoves(color as Color);
+		// }
+		//
+		// $inspect({ possibleMoves: this.possibleMoves });
 	}
 
 	testPlacement(piece: PieceModel, position: { x: number; y: number }) {}

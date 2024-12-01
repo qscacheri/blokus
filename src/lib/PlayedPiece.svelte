@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Block from './Block.svelte';
 	import type { PlayedPieceModel } from './PlayedPieceModel';
 
 	interface Props {
@@ -16,20 +15,35 @@
 
 		const { x, y } = piece.position;
 
-		console.log({ x, y });
+		return { x, y, display: true };
+	}
+	function getBlockStyle(row: number, col: number) {
+		const currentBlock = piece.piece.layout[row][col];
+		if (currentBlock === 0) {
+			return 'display: none;';
+		}
 
-		return { x: col + x, y: row + y, display: true };
+		const { x, y } = piece.position;
+
+		return `
+			--col: ${col + 1 + x};
+			--row: ${row + 1 + y};
+			--color: ${piece.color};
+		`;
 	}
 </script>
 
 {#each piece.piece.layout as row, rowIdx}
 	{#each row as _, colIdx}
-		{@const block = getBlockPosition(rowIdx, colIdx)}
-		{#if block.display && block.x && block.y}
-			<Block x={block.x} y={block.y} color={piece.color} />
-		{/if}
+		<div class="block" style={getBlockStyle(rowIdx, colIdx)}></div>
 	{/each}
 {/each}
 
 <style>
+	.block {
+		grid-column: var(--col);
+		grid-row: var(--row);
+		background: var(--color);
+		border: 1px solid #000;
+	}
 </style>
