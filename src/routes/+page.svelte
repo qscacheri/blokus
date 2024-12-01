@@ -15,7 +15,7 @@
 	const height = 20;
 
 	const pp = new PlayedPieceModel(new PieceModel(pieces[0]), 'red');
-	pp.position = { x: 15, y: 19 };
+	pp.position = { x: 0, y: 0 };
 
 	$inspect(game.possibleMoves);
 
@@ -37,6 +37,7 @@
 	{#each game.playedPieces as playedPiece}
 		<PlayedPiece piece={playedPiece} />
 	{/each}
+	<!-- <PlayedPiece piece={pp} /> -->
 	<!-- {#each Object.values(game.possibleMoves) as move} -->
 	<!-- 	<Block x={move.x} y={move.y} /> -->
 	<!-- {/each} -->
