@@ -11,6 +11,12 @@ export class PlayedPieceModel {
 		this.color = color;
 	}
 
+	clone() {
+		const clone = new PlayedPieceModel(this.piece, this.color);
+		clone.position = { ...this.position };
+		return clone;
+	}
+
 	cornerPositions(): Point[] {
 		const cornerIndices = this.piece.getCornerIndices();
 		console.log({ cornerIndices });
@@ -49,14 +55,19 @@ export class PlayedPieceModel {
 		return false;
 	}
 
-	blocks(): { x: number; y: number }[] {
-		const blocks: { x: number; y: number }[] = [];
+	blocks(): { x: number; y: number; isCorner: boolean }[] {
+		const cornerIndices = this.piece.getCornerIndices();
+		const blocks: { x: number; y: number; isCorner: boolean }[] = [];
 		for (let row = 0; row < this.piece.layout.length; row++) {
 			for (let col = 0; col < this.piece.layout[row].length; col++) {
 				if (this.piece.layout[row][col] === 0) {
 					continue;
 				}
-				blocks.push({ x: this.position.x + col, y: this.position.y + row });
+				blocks.push({
+					x: this.position.x + col,
+					y: this.position.y + row,
+					isCorner: cornerIndices.some(([r, c]) => r === row && c === col)
+				});
 			}
 		}
 		return blocks;

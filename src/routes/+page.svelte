@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Block from '$lib/Block.svelte';
 	import { game } from '$lib/Game.svelte';
+	import Ghost from '$lib/Ghost.svelte';
 	import { PieceModel } from '$lib/PieceModel';
 	import { pieces } from '$lib/pieces';
 	import PlayedPiece from '$lib/PlayedPiece.svelte';
@@ -20,28 +21,40 @@
 	$inspect(game.possibleMoves);
 
 	$effect(() => {
-		const values = Object.values(game.possibleMoves);
-		for (const value of values) {
-			console.log('POSSIBLE MOVE', value);
+		for (const color in game.possibleMoves) {
+			console.log(`Possible moves for ${color}:`, game.possibleMoves[color]);
 		}
 	});
+
+	const possibleMoves = $derived.by(() => {
+		const moves: any[] = [];
+		for (const color in game.possibleMoves) {
+			moves.push(...game.possibleMoves[color]);
+		}
+		return moves;
+	});
+
+	$inspect('GHOST PIECE ', game.ghostPiece);
 </script>
 
 <div class="board" style="--width: {width}; --height: {height}">
 	{#each Array.from({ length: width }) as _, row}
 		{#each Array.from({ length: height }) as _, col}
 			<Block x={col} y={row} color="#EEEEEE" />
-			<!-- <div class="empty block" style="grid-column: {row + 1}; grid-row: {col + 1}"></div> -->
 		{/each}
 	{/each}
 	{#each game.playedPieces as playedPiece}
 		<PlayedPiece piece={playedPiece} />
 	{/each}
-	<!-- <PlayedPiece piece={pp} /> -->
-	<!-- {#each Object.values(game.possibleMoves) as move} -->
-	<!-- 	<Block x={move.x} y={move.y} /> -->
-	<!-- {/each} -->
+	{#each possibleMoves as move}
+		<Block x={move.x} y={move.y} />
+	{/each}
 </div>
+
+{#if game.ghostPiece}
+	<Ghost piece={game.ghostPiece} />
+	<!-- <PlayedPiece piece={game.ghostPiece} /> -->
+{/if}
 
 <style>
 	.board {
@@ -49,10 +62,5 @@
 		display: grid;
 		grid-template-columns: repeat(var(--width), var(--size));
 		grid-template-rows: repeat(var(--height), var(--size));
-	}
-
-	.block {
-		background: lightgray;
-		border: 1px solid #000;
 	}
 </style>

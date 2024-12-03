@@ -7,15 +7,11 @@
 
 	const { x, y, color = 'magenta' }: Props = $props();
 
-	console.log({
-		x,
-		y,
-		col: x + 1,
-		row: y + 1
-	});
+	let col = $derived(x + 1);
+	let row = $derived(y + 1);
 </script>
 
-<div class="block" style="--col: {x + 1}; --row: {y + 1}; --color: {color};"></div>
+<div class="block" style="--col: {col}; --row: {row}; --color: {color};"></div>
 
 <style>
 	.block {

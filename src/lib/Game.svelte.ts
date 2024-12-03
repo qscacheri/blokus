@@ -59,6 +59,24 @@ export class Game {
 		}
 	}
 
+	pieceBreaksCornerRule(piece: PlayedPieceModel) {
+		const blocks = piece.blocks();
+		for (const block of blocks) {
+			const left = { x: block.x - 1, y: block.y };
+			const right = { x: block.x + 1, y: block.y };
+			const up = { x: block.x, y: block.y - 1 };
+			const down = { x: block.x, y: block.y + 1 };
+			const positions = [left, right, up, down];
+			for (const position of positions) {
+				const existingBlock = this.blockAtPosition(position);
+				if (existingBlock && existingBlock.color === piece.color) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	pieceOverlapsOtherPieceOrEdge(piece: PlayedPieceModel) {
 		if (piece.outOfBounds()) {
 			return true;
@@ -73,6 +91,7 @@ export class Game {
 	}
 
 	updatePossibleMoves(color: Color) {
+		this.possibleMoves[color] = [];
 		for (const playedPiece of this.playedPieces) {
 			if (playedPiece.color !== color) {
 				continue;
@@ -94,23 +113,64 @@ export class Game {
 					if (position.x < 0 || position.x > 19 || position.y < 0 || position.y > 19) {
 						continue;
 					}
+
+					const left = { x: position.x - 1, y: position.y };
+					const right = { x: position.x + 1, y: position.y };
+					const up = { x: position.x, y: position.y - 1 };
+					const down = { x: position.x, y: position.y + 1 };
+
+					if (
+						this.blockAtPosition(left) ||
+						this.blockAtPosition(right) ||
+						this.blockAtPosition(up) ||
+						this.blockAtPosition(down)
+					) {
+						continue;
+					}
 					console.log(`Adding possible move for ${color} at ${position.x}, ${position.y}`);
 					this.possibleMoves[color].push(position);
 				}
 			}
 		}
-		this.possibleMoves = this.possibleMoves;
 	}
 
 	blockAtPosition(position: Point) {
 		for (const playedPiece of this.playedPieces) {
 			for (const block of playedPiece.blocks()) {
 				if (block.x === position.x && block.y === position.y) {
-					return true;
+					return { ...block, color: playedPiece.color };
 				}
 			}
 		}
 		return null;
+	}
+
+	playMoveForColor(color: Color) {
+		const shuffledMoves = shuffle(this.possibleMoves[color as Color]);
+		while (shuffledMoves.length) {
+			const move = shuffledMoves.pop();
+			if (!move) {
+				continue;
+			}
+
+			const piece = this.findPieceForPosition(move, color);
+			if (piece) {
+				this.playedPieces.push(piece);
+				this.updatePossibleMoves(color);
+				return;
+			}
+		}
+	}
+
+	nextMove() {
+		for (const color in this.possibleMoves) {
+			this.playMoveForColor(color as Color);
+		}
+		setTimeout(this.nextMove.bind(this), 2000);
+	}
+
+	startGameLoop() {
+		this.nextMove();
 	}
 
 	// find a piece/rotation for a point. this point is already assumed to be validated for corner to corner
@@ -140,7 +200,10 @@ export class Game {
 					const x = position.x - cornerIdx[1];
 					const y = position.y - cornerIdx[0];
 					piece.position = { x, y };
-					if (!this.pieceOverlapsOtherPieceOrEdge(piece)) {
+					const overlapsPieceOrEdge = this.pieceOverlapsOtherPieceOrEdge(piece);
+					const breaksCornerRule = this.pieceBreaksCornerRule(piece);
+
+					if (!overlapsPieceOrEdge && !breaksCornerRule) {
 						console.log(`Found piece for ${color} at ${x}, ${y}`);
 						this.unplayedPieces[color].splice(this.unplayedPieces[color].indexOf(randomPiece), 1);
 						return piece;
@@ -167,11 +230,11 @@ export class Game {
 			this.placeFirstPiece(color as Color);
 		}
 
-		// for (const color in Colors) {
-		// 	this.updatePossibleMoves(color as Color);
-		// }
-		//
-		// $inspect({ possibleMoves: this.possibleMoves });
+		for (const color in Colors) {
+			this.updatePossibleMoves(color as Color);
+		}
+
+		setTimeout(this.startGameLoop.bind(this), 2000);
 	}
 
 	testPlacement(piece: PieceModel, position: { x: number; y: number }) {}
