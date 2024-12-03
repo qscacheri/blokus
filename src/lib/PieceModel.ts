@@ -1,7 +1,17 @@
 export class PieceModel {
 	layout: number[][];
+	id: string;
+
 	constructor(layout: number[][]) {
 		this.layout = layout;
+		let id = '';
+		for (let i = 0; i < this.layout.length; i++) {
+			for (let j = 0; j < this.layout[i].length; j++) {
+				id += this.layout[i][j];
+			}
+			id += '-';
+		}
+		this.id = id;
 	}
 
 	rotate(): void {

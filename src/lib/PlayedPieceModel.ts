@@ -19,7 +19,6 @@ export class PlayedPieceModel {
 
 	cornerPositions(): Point[] {
 		const cornerIndices = this.piece.getCornerIndices();
-		console.log({ cornerIndices });
 		const positions: Point[] = [];
 		for (const index of cornerIndices) {
 			const position = this.indexToPosition(index);

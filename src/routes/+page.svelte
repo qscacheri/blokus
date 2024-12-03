@@ -20,12 +20,6 @@
 
 	$inspect(game.possibleMoves);
 
-	$effect(() => {
-		for (const color in game.possibleMoves) {
-			console.log(`Possible moves for ${color}:`, game.possibleMoves[color]);
-		}
-	});
-
 	const possibleMoves = $derived.by(() => {
 		const moves: any[] = [];
 		for (const color in game.possibleMoves) {
@@ -35,7 +29,7 @@
 	});
 </script>
 
-<main class="flex">
+<main class="flex gap-4 p-8">
 	<div class="board" style="--width: {width}; --height: {height}">
 		{#each Array.from({ length: width }) as _, row}
 			{#each Array.from({ length: height }) as _, col}

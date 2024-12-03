@@ -3,6 +3,7 @@ import shuffle from 'just-shuffle';
 import { PlayedPieceModel } from './PlayedPieceModel';
 import { pieces } from './pieces';
 import type { Point } from './types';
+import { wait } from './util';
 
 export const Colors = {
 	red: 'red',
@@ -49,6 +50,8 @@ export class Game {
 		yellow: [],
 		green: []
 	});
+
+	currentPiece: PlayedPieceModel | null = $state(null);
 
 	constructor() {
 		for (const color in Colors) {
@@ -127,7 +130,6 @@ export class Game {
 					) {
 						continue;
 					}
-					console.log(`Adding possible move for ${color} at ${position.x}, ${position.y}`);
 					this.possibleMoves[color].push(position);
 				}
 			}
@@ -145,7 +147,7 @@ export class Game {
 		return null;
 	}
 
-	playMoveForColor(color: Color) {
+	async playMoveForColor(color: Color) {
 		const shuffledMoves = shuffle(this.possibleMoves[color as Color]);
 		while (shuffledMoves.length) {
 			const move = shuffledMoves.pop();
@@ -153,7 +155,7 @@ export class Game {
 				continue;
 			}
 
-			const piece = this.findPieceForPosition(move, color);
+			const piece = await this.findPieceForPosition(move, color);
 			if (piece) {
 				this.playedPieces.push(piece);
 				this.updatePossibleMoves(color);
@@ -162,9 +164,9 @@ export class Game {
 		}
 	}
 
-	nextMove() {
+	async nextMove() {
 		for (const color in this.possibleMoves) {
-			this.playMoveForColor(color as Color);
+			await this.playMoveForColor(color as Color);
 		}
 		setTimeout(this.nextMove.bind(this), 2000);
 	}
@@ -174,15 +176,15 @@ export class Game {
 	}
 
 	// find a piece/rotation for a point. this point is already assumed to be validated for corner to corner
-	findPieceForPosition(position: Point, color: Color) {
+	async findPieceForPosition(position: Point, color: Color) {
 		const checkedPieceIndices: number[] = [];
-
-		console.log(`Finding piece for ${color} at ${position.x}, ${position.y}`);
 
 		while (checkedPieceIndices.length < this.unplayedPieces[color].length) {
 			const randomPiece = this.randomPiece(color, checkedPieceIndices);
 			const rotations = shuffle(randomPiece.rotations());
 			// const rotations = randomPiece.rotations();
+			this.currentPiece = new PlayedPieceModel(randomPiece, color);
+			await wait(500);
 			while (rotations.length) {
 				const rotation = rotations.pop();
 				if (!rotation) {
@@ -204,7 +206,6 @@ export class Game {
 					const breaksCornerRule = this.pieceBreaksCornerRule(piece);
 
 					if (!overlapsPieceOrEdge && !breaksCornerRule) {
-						console.log(`Found piece for ${color} at ${x}, ${y}`);
 						this.unplayedPieces[color].splice(this.unplayedPieces[color].indexOf(randomPiece), 1);
 						return piece;
 					}
@@ -213,21 +214,19 @@ export class Game {
 		}
 	}
 
-	placeFirstPiece(color: Color) {
+	async placeFirstPiece(color: Color) {
 		const position = startingPositions[color];
-		const piece = this.findPieceForPosition(position, color);
+		const piece = await this.findPieceForPosition(position, color);
 		if (!piece) {
-			console.log('No piece found');
 			return;
 		}
-		console.log(`Pushing piece`, piece);
 		this.playedPieces.push(piece);
 	}
 
-	placeFirstPieces() {
+	async placeFirstPieces() {
 		// this.placeFirstPiece('green');
 		for (const color in Colors) {
-			this.placeFirstPiece(color as Color);
+			await this.placeFirstPiece(color as Color);
 		}
 
 		for (const color in Colors) {
