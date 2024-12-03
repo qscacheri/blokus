@@ -4,7 +4,7 @@ import { PlayedPieceModel } from './PlayedPieceModel';
 import { pieces } from './pieces';
 import type { Point } from './types';
 
-const Colors = {
+export const Colors = {
 	red: 'red',
 	blue: 'blue',
 	yellow: 'yellow',
@@ -25,7 +25,7 @@ interface PossibleMoves {
 	green: Point[];
 }
 
-type Color = keyof typeof Colors;
+export type Color = keyof typeof Colors;
 
 interface UnplayedPieces {
 	red: PieceModel[];

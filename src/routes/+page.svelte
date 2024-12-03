@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Block from '$lib/Block.svelte';
 	import { game } from '$lib/Game.svelte';
-	import Ghost from '$lib/Ghost.svelte';
 	import { PieceModel } from '$lib/PieceModel';
 	import { pieces } from '$lib/pieces';
 	import PlayedPiece from '$lib/PlayedPiece.svelte';
 	import { PlayedPieceModel } from '$lib/PlayedPieceModel';
+	import UnplayedPieces from '$lib/UnplayedPieces.svelte';
 	import { onMount } from 'svelte';
 
 	onMount(() => {
@@ -33,34 +33,30 @@
 		}
 		return moves;
 	});
-
-	$inspect('GHOST PIECE ', game.ghostPiece);
 </script>
 
-<div class="board" style="--width: {width}; --height: {height}">
-	{#each Array.from({ length: width }) as _, row}
-		{#each Array.from({ length: height }) as _, col}
-			<Block x={col} y={row} color="#EEEEEE" />
+<main class="flex">
+	<div class="board" style="--width: {width}; --height: {height}">
+		{#each Array.from({ length: width }) as _, row}
+			{#each Array.from({ length: height }) as _, col}
+				<Block x={col} y={row} color="#EEEEEE" />
+			{/each}
 		{/each}
-	{/each}
-	{#each game.playedPieces as playedPiece}
-		<PlayedPiece piece={playedPiece} />
-	{/each}
-	{#each possibleMoves as move}
-		<Block x={move.x} y={move.y} />
-	{/each}
-</div>
+		{#each game.playedPieces as playedPiece}
+			<PlayedPiece piece={playedPiece} />
+		{/each}
+		{#each possibleMoves as move}
+			<Block x={move.x} y={move.y} />
+		{/each}
+	</div>
 
-{#if game.ghostPiece}
-	<Ghost piece={game.ghostPiece} />
-	<!-- <PlayedPiece piece={game.ghostPiece} /> -->
-{/if}
+	<UnplayedPieces />
+</main>
 
 <style>
 	.board {
-		--size: 32px;
 		display: grid;
-		grid-template-columns: repeat(var(--width), var(--size));
-		grid-template-rows: repeat(var(--height), var(--size));
+		grid-template-columns: repeat(var(--width), var(--block-size));
+		grid-template-rows: repeat(var(--height), var(--block-size));
 	}
 </style>
