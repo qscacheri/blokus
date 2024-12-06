@@ -53,6 +53,12 @@ export class Game {
 
 	currentPiece: PlayedPieceModel | null = $state(null);
 
+	currentPossiblePosition: Point | null = $state(null);
+
+	colorsWithNoMoreMoves: Color[] = $state([]);
+
+	speed = $state(0);
+
 	constructor() {
 		for (const color in Colors) {
 			this.unplayedPieces[color] = [];
@@ -61,6 +67,8 @@ export class Game {
 			}
 		}
 	}
+
+	serialize() {}
 
 	pieceBreaksCornerRule(piece: PlayedPieceModel) {
 		const blocks = piece.blocks();
@@ -155,20 +163,32 @@ export class Game {
 				continue;
 			}
 
+			this.currentPossiblePosition = { ...move };
+			console.log(`Checking move for ${color} at ${move.x}, ${move.y}`);
+			await wait(this.speed);
+
 			const piece = await this.findPieceForPosition(move, color);
 			if (piece) {
 				this.playedPieces.push(piece);
-				this.updatePossibleMoves(color);
+				for (const color in Colors) {
+					this.updatePossibleMoves(color as Color);
+				}
+				this.currentPossiblePosition = null;
+				await wait(this.speed);
 				return;
 			}
 		}
+		console.log('no more moves for color', color);
+		// alert(`No more moves for ${color}`);
+		// this.colorsWithNoMoreMoves.push(color);
 	}
 
 	async nextMove() {
 		for (const color in this.possibleMoves) {
+			console.log('color', color);
 			await this.playMoveForColor(color as Color);
 		}
-		setTimeout(this.nextMove.bind(this), 2000);
+		await this.nextMove();
 	}
 
 	startGameLoop() {
@@ -180,19 +200,33 @@ export class Game {
 		const checkedPieceIndices: number[] = [];
 
 		while (checkedPieceIndices.length < this.unplayedPieces[color].length) {
-			const randomPiece = this.randomPiece(color, checkedPieceIndices);
-			const rotations = shuffle(randomPiece.rotations());
+			console.log({
+				checkedPieceIndices: checkedPieceIndices.length,
+				totalPieces: this.unplayedPieces[color].length
+			});
+			const { piece: randomPiece, index } = this.randomPiece(color, checkedPieceIndices);
+			checkedPieceIndices.push(index);
+			let rotationAmounts = [0, 1, 2, 3];
+			rotationAmounts = shuffle(rotationAmounts);
 			// const rotations = randomPiece.rotations();
-			this.currentPiece = new PlayedPieceModel(randomPiece, color);
-			await wait(500);
-			while (rotations.length) {
-				const rotation = rotations.pop();
+			if (this.speed) {
+				await wait(this.speed);
+			}
+			while (rotationAmounts.length) {
+				const rotation = rotationAmounts.pop();
 				if (!rotation) {
 					continue;
 				}
-				const piece = new PlayedPieceModel(rotation, color);
+				randomPiece.rotation = rotation;
+				this.unplayedPieces = this.unplayedPieces;
+				this.currentPiece = new PlayedPieceModel(randomPiece, color);
+
+				const piece = new PlayedPieceModel(randomPiece, color);
 				// const cornerPositions = shuffle(piece.cornerPositions());
 				const cornerIndices = piece.piece.getCornerIndices();
+				if (this.speed) {
+					await wait(this.speed);
+				}
 				while (cornerIndices.length) {
 					// const cornerPosition = cornerPositions.pop();
 					const cornerIdx = cornerIndices.pop();
@@ -203,7 +237,9 @@ export class Game {
 					const y = position.y - cornerIdx[0];
 					piece.position = { x, y };
 					const overlapsPieceOrEdge = this.pieceOverlapsOtherPieceOrEdge(piece);
+					console.log('overlapsPieceOrEdge', overlapsPieceOrEdge);
 					const breaksCornerRule = this.pieceBreaksCornerRule(piece);
+					console.log('breaksCornerRule', breaksCornerRule);
 
 					if (!overlapsPieceOrEdge && !breaksCornerRule) {
 						this.unplayedPieces[color].splice(this.unplayedPieces[color].indexOf(randomPiece), 1);
@@ -233,18 +269,16 @@ export class Game {
 			this.updatePossibleMoves(color as Color);
 		}
 
-		setTimeout(this.startGameLoop.bind(this), 2000);
+		setTimeout(this.startGameLoop.bind(this), this.speed);
 	}
 
-	testPlacement(piece: PieceModel, position: { x: number; y: number }) {}
-
-	randomPiece(color: Color, skip: number[]): PieceModel {
+	randomPiece(color: Color, skip: number[]): { piece: PieceModel; index: number } {
 		// return this.unplayedPieces[color][0];
 		const index = Math.floor(Math.random() * this.unplayedPieces[color].length);
 		if (skip.includes(index)) {
 			return this.randomPiece(color, skip);
 		}
-		return this.unplayedPieces[color][index];
+		return { piece: this.unplayedPieces[color][index], index };
 	}
 
 	start() {

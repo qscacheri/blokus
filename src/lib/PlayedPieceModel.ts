@@ -84,4 +84,8 @@ export class PlayedPieceModel {
 		}
 		return false;
 	}
+
+	equals(other: PlayedPieceModel) {
+		return other.piece.id === this.piece.id && other.color === this.color;
+	}
 }

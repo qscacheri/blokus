@@ -41,7 +41,7 @@ export class PieceModel {
 					newLayout[i].push(currentLayout[j][i]);
 				}
 			}
-			currentLayout = deepCopy(newLayout);
+			currentLayout = JSON.parse(JSON.stringify(newLayout));
 		}
 		this._rotations[this.rotation] = currentLayout;
 		return currentLayout;
