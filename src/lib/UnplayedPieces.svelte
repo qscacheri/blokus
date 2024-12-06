@@ -3,6 +3,12 @@
 	import { PlayedPieceModel } from './PlayedPieceModel';
 	import StandalonePiece from './StandalonePiece.svelte';
 
+	interface Props {
+		color: Color;
+	}
+
+	const { color }: Props = $props();
+
 	function getPieces(color: Color) {
 		game.currentPiece;
 		return game.unplayedPieces[color].map((piece) => {
@@ -10,59 +16,21 @@
 		});
 	}
 
-	let redPieces = $derived(getPieces(Colors.red));
-	let bluePieces = $derived(getPieces(Colors.blue));
-	let greenPieces = $derived(getPieces(Colors.green));
-	let yellowPieces = $derived(getPieces(Colors.yellow));
-
-	const selectedPiece = $derived.by(() => {
-		if (!game.currentPiece) return null;
-		for (const color in game.unplayedPieces) {
-			for (const piece of [...redPieces, ...bluePieces, ...greenPieces, ...yellowPieces]) {
-				if (piece.piece.id === game.currentPiece.piece.id && piece.color === color) {
-					return piece;
-				}
-			}
-		}
-	});
+	let pieces = $derived(getPieces(color));
 </script>
 
-{#if game.currentPiece}
-	<StandalonePiece piece={game.currentPiece} size={64} />
-{/if}
-<div class="grid grid-cols-2 grid-rows-2">
-	<div class="grid grid-cols-5 grid-rows-5">
-		{#each redPieces as piece}
-			<div class:selected={game.currentPiece?.equals(piece)} class="border border-transparent">
-				<StandalonePiece {piece} />
-			</div>
-		{/each}
-	</div>
-	<div class="grid grid-cols-5 grid-rows-5">
-		{#each bluePieces as piece}
-			<div class:selected={game.currentPiece?.equals(piece)} class="border border-transparent">
-				<StandalonePiece {piece} />
-			</div>
-		{/each}
-	</div>
-	<div class="grid grid-cols-5 grid-rows-5">
-		{#each greenPieces as piece}
-			<div class:selected={game.currentPiece?.equals(piece)} class="border border-transparent">
-				<StandalonePiece {piece} />
-			</div>
-		{/each}
-	</div>
-	<div class="grid grid-cols-5 grid-rows-5">
-		{#each yellowPieces as piece}
-			<div class:selected={game.currentPiece?.equals(piece)} class="border border-transparent">
-				<StandalonePiece {piece} />
-			</div>
-		{/each}
-	</div>
+<div
+	class="grid h-full w-full grid-cols-5 flex-wrap gap-1 overflow-hidden border-2 border-white p-1"
+>
+	{#each pieces as piece}
+		<div class="border border-transparent">
+			<StandalonePiece size={12} {piece} />
+		</div>
+	{/each}
 </div>
 
 <style>
 	.selected {
-		border: 1px solid black;
+		/* border: 1px solid black; */
 	}
 </style>

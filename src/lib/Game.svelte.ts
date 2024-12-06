@@ -57,7 +57,7 @@ export class Game {
 
 	colorsWithNoMoreMoves: Color[] = $state([]);
 
-	speed = $state(0);
+	speed = $state(50);
 
 	constructor() {
 		for (const color in Colors) {

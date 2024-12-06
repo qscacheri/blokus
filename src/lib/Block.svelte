@@ -19,13 +19,14 @@
 
 <style lang="postcss">
 	.block {
+		aspect-ratio: 1 / 1;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		grid-column: var(--col);
 		grid-row: var(--row);
 		background-color: var(--lighter);
-		border: 1px solid #ffffff;
+		border: 1px solid black;
 		box-shadow: inset 0 0 10px 5px var(--color);
 	}
 </style>
