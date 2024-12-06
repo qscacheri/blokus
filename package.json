@@ -35,6 +35,7 @@
 		"vitest": "^2.0.4"
 	},
 	"dependencies": {
+		"@sveltejs/adapter-vercel": "^5.5.0",
 		"@tailwindcss/typography": "^0.5.15",
 		"color": "^4.2.3",
 		"just-shuffle": "^4.2.0"
